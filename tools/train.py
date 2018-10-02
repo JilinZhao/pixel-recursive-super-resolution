@@ -5,6 +5,7 @@ from solver import *
 
 flags = tf.app.flags
 
+
 #solver
 flags.DEFINE_string("train_dir", "models", "trained model save path")
 flags.DEFINE_string("samples_dir", "samples", "sampled images save path")

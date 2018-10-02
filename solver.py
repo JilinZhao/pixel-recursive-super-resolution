@@ -11,7 +11,6 @@ from utils import *
 import os
 import time
 
-
 flags = tf.app.flags
 conf = flags.FLAGS
 class Solver(object):
