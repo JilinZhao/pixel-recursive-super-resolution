@@ -66,14 +66,14 @@ class Solver(object):
         t2 = time.time()
         print('step %d, loss = %.2f (%.1f examples/sec; %.3f sec/batch)' % ((iters, loss, self.batch_size/(t2-t1), (t2-t1))))
         iters += 1
-        if iters % 10 == 0:
+        if iters % 1 == 0:
           summary_str = sess.run(summary_op, feed_dict={self.net.train: True})
           summary_writer.add_summary(summary_str, iters)
-        if iters % 1000 == 0:
+        if iters % 10 == 0:
           #self.sample(sess, mu=1.0, step=iters)
           self.sample(sess, mu=1.1, step=iters)
           #self.sample(sess, mu=100, step=iters)
-        if iters % 10000 == 0:
+        if iters % 100 == 0:
           checkpoint_path = os.path.join(self.train_dir, 'model.ckpt')
           saver.save(sess, checkpoint_path, global_step=iters)
     except tf.errors.OutOfRangeError:
@@ -88,11 +88,17 @@ class Solver(object):
     coord.join(threads)
     sess.close()
   def sample(self, sess, mu=1.1, step=None):
+    # 컨디셔닝망 로짓
     c_logits = self.net.conditioning_logits
+    # 프라이어망 로짓
     p_logits = self.net.prior_logits
+    # 저해상도 이미지
     lr_imgs = self.dataset.lr_images
+    # 고해상도 이미지
     hr_imgs = self.dataset.hr_images
+    # ?????????????
     np_hr_imgs, np_lr_imgs = sess.run([hr_imgs, lr_imgs])
+    # Geoerator 모델의 결과가 들어갈 변수(프레임)
     gen_hr_imgs = np.zeros((self.batch_size, 32, 32, 3), dtype=np.float32)
     #gen_hr_imgs = np_hr_imgs
     #gen_hr_imgs[:,16:,16:,:] = 0.0
@@ -105,7 +111,9 @@ class Solver(object):
           np_p_logits = sess.run(p_logits, feed_dict={hr_imgs: gen_hr_imgs})
           new_pixel = logits_2_pixel_value(np_c_logits[:, i, j, c*256:(c+1)*256] + np_p_logits[:, i, j, c*256:(c+1)*256], mu=mu)
           gen_hr_imgs[:, i, j, c] = new_pixel
-    #
+    # 저해상도 이미지 저장
     save_samples(np_lr_imgs, self.samples_dir + '/lr_' + str(mu*10) + '_' + str(step) + '.jpg')
+    # 고해상도 이미지 저장
     save_samples(np_hr_imgs, self.samples_dir + '/hr_' + str(mu*10) + '_' + str(step) + '.jpg')
+    # 만들어준 이미지 저장
     save_samples(gen_hr_imgs, self.samples_dir + '/generate_' + str(mu*10) + '_' + str(step) + '.jpg')

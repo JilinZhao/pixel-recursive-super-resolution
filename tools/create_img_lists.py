@@ -7,10 +7,10 @@ from optparse import OptionParser
 
 parser = OptionParser()
 parser.add_option("--dataset", dest="dataset",  
-                  help="dataset path")
+                  help="dataset path", default="D:/Project/test_Img")
 
 parser.add_option("--outfile", dest="outfile",  
-                  help="outfile path")
+                  help="outfile path", default="../data/train.txt")
 (options, args) = parser.parse_args()
 
 f = open(options.outfile, 'w')
